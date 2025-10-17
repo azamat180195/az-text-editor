@@ -1,0 +1,12 @@
+{
+  "name": "John Doe",
+  "age": 30,
+  "email": "john@example.com",
+  "address": {
+    "street": "123 Main St",
+    "city": "New York"
+  }
+}}
+
+// ERROR: Extra '}' on line 9
+// Should show: ⚠ L9: Extra '}' - no opening brace

@@ -1,0 +1,7 @@
+database:
+  hosts: ["localhost", "192.168.1.1"]
+  ports: [3306, 3307
+  timeout: 30
+
+# ERROR: Unclosed bracket on line 3
+# Should show: ⚠ L3: Bracket not closed

@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Alice"
+    },
+    {
+      "id": 2,
+      "name": "Bob"
+    }
+  ]
+
+// ERROR: Missing closing '}'
+// Should show: ⚠ L11: Unclosed '{' - 1 open brace(s)
