@@ -717,12 +717,15 @@ void draw_screen(Editor *ed) {
     check_syntax_error(ed);
     if (ed->syntax_error.line > 0) {
         attron(COLOR_PAIR(3));  /* Red color */
-        char error_display[100];
+        char error_display[200];  /* Increased buffer size to avoid truncation warning */
         snprintf(error_display, sizeof(error_display), "⚠ Q%d: %s", 
                  ed->syntax_error.line, ed->syntax_error.msg);
         
         /* Truncate if too long */
         int max_len = ed->screen_width / 2 - 2;  /* Use half screen */
+        if (max_len > (int)sizeof(error_display) - 1) {
+            max_len = sizeof(error_display) - 1;
+        }
         if ((int)strlen(error_display) > max_len && max_len > 15) {
             error_display[max_len - 3] = '.';
             error_display[max_len - 2] = '.';
@@ -735,6 +738,7 @@ void draw_screen(Editor *ed) {
         if (error_x < 0) error_x = 0;
         if (error_x + (int)strlen(error_display) >= ed->screen_width) {
             error_x = ed->screen_width - strlen(error_display) - 1;
+            if (error_x < 0) error_x = 0;
         }
         mvprintw(status_line, error_x, "%s", error_display);
         attroff(COLOR_PAIR(3));
