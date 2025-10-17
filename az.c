@@ -1028,6 +1028,9 @@ void insert_char(Editor *ed, char c) {
     ed->modified = 1;
     
     ed->sel_active = 0;
+    
+    /* Re-check syntax immediately */
+    check_syntax_error(ed);
 }
 
 /* Handle tab */
@@ -1090,6 +1093,9 @@ void backspace_char(Editor *ed) {
         ed->total_lines--;
         ed->modified = 1;
     }
+    
+    /* Re-check syntax immediately */
+    check_syntax_error(ed);
 }
 
 /* Delete character */
@@ -1130,6 +1136,9 @@ void delete_char(Editor *ed) {
         ed->total_lines--;
         ed->modified = 1;
     }
+    
+    /* Re-check syntax immediately */
+    check_syntax_error(ed);
 }
 
 /* Insert newline */
@@ -1165,6 +1174,9 @@ void insert_newline(Editor *ed) {
     ed->preferred_x = 0;
     ed->total_lines++;
     ed->modified = 1;
+    
+    /* Re-check syntax immediately */
+    check_syntax_error(ed);
 }
 
 /* Move cursor */
@@ -1334,6 +1346,9 @@ void delete_selection(Editor *ed) {
     ed->preferred_x = sx;
     ed->sel_active = 0;
     ed->modified = 1;
+    
+    /* Re-check syntax immediately */
+    check_syntax_error(ed);
 }
 
 /* Copy selection */
@@ -1426,6 +1441,10 @@ void paste_clipboard(Editor *ed) {
     }
     
     ed->modified = 1;
+    
+    /* Re-check syntax immediately */
+    check_syntax_error(ed);
+    
     set_message(ed, "Pasted");
 }
 
