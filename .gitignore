@@ -1,0 +1,21 @@
+# Build files
+az
+*.o
+*.out
+
+# Debug files
+*.log
+az_debug.log
+
+# Test files
+test*.txt
+*.tmp
+
+# Editor files
+*~
+*.swp
+.*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
