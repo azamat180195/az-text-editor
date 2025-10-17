@@ -4,6 +4,3 @@ users:
 	email: alice@example.com
   - name: Bob
     age: 30
-
-# ERROR: TAB character on line 4 (before 'email')
-# Should show: ⚠ L4: YAML: TAB not allowed - use spaces

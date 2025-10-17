@@ -477,83 +477,91 @@ void check_syntax_error(Editor *ed) {
         }
     }
     
-    /* Python validation */
+    /* Python validation - simplified and more reliable */
     if (strcmp(ext, ".py") == 0) {
-        /* Track indentation style across whole file */
-        int file_uses_tabs = 0;
-        int file_uses_spaces = 0;
-        int first_indent_line = 0;
+        /* Scan whole file to determine indentation style */
+        int first_tab_line = 0;
+        int first_space_line = 0;
         
         line = ed->first_line;
         line_num = 1;
-        while (line) {
-            /* Skip empty lines and comments */
+        
+        /* First pass: find first indented line with tabs and spaces */
+        while (line && (first_tab_line == 0 || first_space_line == 0)) {
+            /* Skip empty lines */
             if (line->len == 0) {
                 line = line->next;
                 line_num++;
                 continue;
             }
             
-            /* Check if line is comment */
-            size_t first_char = 0;
-            while (first_char < line->len && (line->data[first_char] == ' ' || line->data[first_char] == '\t')) {
-                first_char++;
+            /* Skip comments - check if first non-whitespace is # */
+            int has_content = 0;
+            for (size_t i = 0; i < line->len; i++) {
+                if (line->data[i] != ' ' && line->data[i] != '\t') {
+                    has_content = 1;
+                    if (line->data[i] == '#') {
+                        has_content = 0;  /* It's a comment */
+                    }
+                    break;
+                }
             }
-            if (first_char < line->len && line->data[first_char] == '#') {
+            
+            if (!has_content) {
                 line = line->next;
                 line_num++;
                 continue;
             }
             
-            /* Check indentation on this line */
-            int line_has_tab = 0, line_has_space = 0;
-            int first_tab = -1, first_space = -1;
-            for (size_t i = 0; i < line->len && (line->data[i] == ' ' || line->data[i] == '\t'); i++) {
-                if (line->data[i] == '\t') {
-                    line_has_tab = 1;
-                    if (first_tab == -1) first_tab = i;
-                }
-                if (line->data[i] == ' ') {
-                    line_has_space = 1;
-                    if (first_space == -1) first_space = i;
+            /* Check indentation */
+            if (line->len > 0 && (line->data[0] == ' ' || line->data[0] == '\t')) {
+                if (line->data[0] == '\t' && first_tab_line == 0) {
+                    first_tab_line = line_num;
+                } else if (line->data[0] == ' ' && first_space_line == 0) {
+                    first_space_line = line_num;
                 }
             }
             
-            /* Check for mixed tabs and spaces on same line */
-            if (line_has_tab && line_has_space) {
-                int error_pos = (first_tab < first_space) ? first_space : first_tab;
-                ed->syntax_error.line = line_num;
-                ed->syntax_error.col_start = error_pos;
-                ed->syntax_error.col_end = error_pos + 1;
+            line = line->next;
+            line_num++;
+        }
+        
+        /* Second pass: check for violations */
+        if (first_tab_line > 0 && first_space_line > 0) {
+            /* File uses both! Report the later one as error */
+            if (first_tab_line < first_space_line) {
+                ed->syntax_error.line = first_space_line;
+                ed->syntax_error.col_start = 0;
+                ed->syntax_error.col_end = 1;
                 snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
-                        "Mixed TAB and spaces on same line");
+                        "Spaces used but file uses TABs (L%d)", first_tab_line);
+            } else {
+                ed->syntax_error.line = first_tab_line;
+                ed->syntax_error.col_start = 0;
+                ed->syntax_error.col_end = 1;
+                snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
+                        "TAB used but file uses spaces (L%d)", first_space_line);
+            }
+            return;
+        }
+        
+        /* Also check for mixed on same line */
+        line = ed->first_line;
+        line_num = 1;
+        while (line) {
+            int has_tab = 0, has_space = 0;
+            for (size_t i = 0; i < line->len && (line->data[i] == ' ' || line->data[i] == '\t'); i++) {
+                if (line->data[i] == '\t') has_tab = 1;
+                if (line->data[i] == ' ') has_space = 1;
+            }
+            if (has_tab && has_space) {
+                ed->syntax_error.line = line_num;
+                ed->syntax_error.col_start = 0;
+                ed->syntax_error.col_end = 1;
+                snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
+                        "Mixed TAB and spaces on line");
                 return;
             }
-            
-            /* Track file-wide indentation style */
-            if ((line_has_tab || line_has_space) && first_indent_line == 0) {
-                first_indent_line = line_num;
-                if (line_has_tab) file_uses_tabs = 1;
-                if (line_has_space) file_uses_spaces = 1;
-            } else if (line_has_tab || line_has_space) {
-                if (line_has_tab && file_uses_spaces) {
-                    ed->syntax_error.line = line_num;
-                    ed->syntax_error.col_start = first_tab;
-                    ed->syntax_error.col_end = first_tab + 1;
-                    snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
-                            "TAB used but file uses spaces (L%d)", first_indent_line);
-                    return;
-                }
-                if (line_has_space && file_uses_tabs) {
-                    ed->syntax_error.line = line_num;
-                    ed->syntax_error.col_start = first_space;
-                    ed->syntax_error.col_end = first_space + 1;
-                    snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
-                            "Spaces used but file uses TABs (L%d)", first_indent_line);
-                    return;
-                }
-            }
-            
             line = line->next;
             line_num++;
         }

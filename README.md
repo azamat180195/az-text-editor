@@ -259,6 +259,44 @@ MIT License - See LICENSE file
 
 **If it works on your distro, let us know!**
 
+## 🗑️ Uninstall
+
+If you want to remove AZ Editor from your system:
+
+### System-wide Installation
+
+```bash
+# Remove binary
+sudo rm /usr/local/bin/az
+
+# Or if you used custom prefix during install:
+sudo rm /usr/bin/az
+```
+
+### Local Installation
+
+```bash
+# If installed in ~/.local/bin
+rm ~/.local/bin/az
+
+# Remove from PATH (edit your shell rc file)
+nano ~/.bashrc
+# Remove the line: export PATH="$HOME/.local/bin:$PATH"
+```
+
+### Complete Removal
+
+```bash
+# Remove all files
+sudo rm /usr/local/bin/az
+rm -rf ~/az-text-editor  # If you cloned the repo
+
+# Optional: Remove any config files (if you created any)
+rm ~/.azrc  # If exists
+```
+
+That's it! AZ Editor is now completely removed from your system.
+
 ## ⭐ Star This Project
 
 If you find AZ Editor useful, please star this repository!
