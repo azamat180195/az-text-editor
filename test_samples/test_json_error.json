@@ -7,6 +7,3 @@
     "city": "New York"
   }
 }}
-
-// ERROR: Extra '}' on line 9
-// Should show: ⚠ L9: Extra '}' - no opening brace

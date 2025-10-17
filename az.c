@@ -789,7 +789,20 @@ void draw_screen(Editor *ed) {
                     attron(COLOR_PAIR(5));
                 }
                 
-                mvaddch(screen_row, LINE_NUMBER_WIDTH + (i - start), line->data[i]);
+                /* Display character - show TAB and space properly */
+                char display_char = line->data[i];
+                if (is_error) {
+                    /* For error display, show TAB as '^' and keep space visible */
+                    if (display_char == '\t') {
+                        mvaddch(screen_row, LINE_NUMBER_WIDTH + (i - start), '^' | A_UNDERLINE | COLOR_PAIR(3));
+                    } else if (display_char == ' ') {
+                        mvaddch(screen_row, LINE_NUMBER_WIDTH + (i - start), '_' | A_UNDERLINE | COLOR_PAIR(3));
+                    } else {
+                        mvaddch(screen_row, LINE_NUMBER_WIDTH + (i - start), display_char);
+                    }
+                } else {
+                    mvaddch(screen_row, LINE_NUMBER_WIDTH + (i - start), display_char);
+                }
                 
                 /* Remove highlighting */
                 if (is_error) {

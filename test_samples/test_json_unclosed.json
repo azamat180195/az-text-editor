@@ -9,6 +9,3 @@
       "name": "Bob"
     }
   ]
-
-// ERROR: Missing closing '}'
-// Should show: ⚠ L11: Unclosed '{' - 1 open brace(s)

@@ -1,12 +1,19 @@
 # AZ Editor - Syntax Error Test Files
 
+## ✅ All Test Files - Clean Syntax!
+
+**IMPORTANT:** Test files contain REAL errors (not in comments):
+- No comment lines with error examples
+- Pure syntax errors for accurate testing
+- Visual indicators: TAB shows as `^`, space error shows as `_`
+
 ## How to Test
 
 ```bash
 # Compile the editor
 make
 
-# Test each file
+# Test each file - watch for red underline!
 ./az test_samples/test_json_error.json
 ./az test_samples/test_yaml_tab.yml
 ./az test_samples/test_python_mixed.py
@@ -20,31 +27,36 @@ make
 **test_json_error.json**
 - **Error**: Extra `}` on line 9
 - **Expected**: `⚠ L9: Extra '}' - no opening brace`
-- **Visual**: Red underline under the extra `}`
+- **Visual**: Red underline under the extra `}` on line 9
+- **Test**: Line 9 has `}}` - second `}` is underlined in red
 
 **test_json_unclosed.json**
 - **Error**: Missing closing `}` at end
 - **Expected**: `⚠ L11: Unclosed '{' - 1 open brace(s)`
 - **Visual**: Error shown in status bar (no specific position)
+- **Test**: File ends at line 11 without closing `}`
 
 ### 2. YAML Tests
 
 **test_yaml_tab.yml**
 - **Error**: TAB character on line 4 before "email"
 - **Expected**: `⚠ L4: YAML: TAB not allowed - use spaces`
-- **Visual**: Red underline on the TAB character
+- **Visual**: TAB shows as red `^` with underline
+- **Test**: Line 4 starts with TAB (not in comment!)
 
 **test_yaml_bracket.yml**
 - **Error**: Unclosed `[` on line 3
 - **Expected**: `⚠ L3: Bracket not closed`
-- **Visual**: Red underline on entire line
+- **Visual**: Red underline on start of line
+- **Test**: Line 3 has `[3306, 3307` without closing `]`
 
 ### 3. Python Test
 
 **test_python_mixed.py**
-- **Error**: Line 4 uses TAB, others use spaces (mixed indentation)
-- **Expected**: `⚠ L4: Mixed TAB and spaces - use one`
-- **Visual**: Red underline on the TAB/space at start of line
+- **Error**: Line 4 uses TAB, line 2 established spaces
+- **Expected**: `⚠ L4: TAB used but file uses spaces (L2)`
+- **Visual**: TAB shows as red `^` with underline
+- **Test**: Line 2 has spaces (establishes style), line 4 has TAB (error!)
 
 ### 4. HTML Tests
 
@@ -105,12 +117,19 @@ When you open a test file:
 │  1 {                                            │
 │  2   "name": "test",                            │
 │  3   "data": 123                                │
-│  4 }}        <-- RED UNDERLINE                  │
+│  4 }}        <-- Second } has RED UNDERLINE     │
 │                                                 │
 │ * file.json  Line 4/10 (40%) ⚠ L4: Extra '}'  │
 │             Click here ↑ to jump to error       │
 └─────────────────────────────────────────────────┘
 ```
+
+### Special Visual Indicators:
+
+- **TAB error**: Shows as red `^` with underline
+- **Space error**: Shows as red `_` with underline  
+- **Other chars**: Show normally with red underline
+- **No error**: No underline, normal text
 
 ## Quick Test Script
 
