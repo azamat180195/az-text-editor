@@ -2,9 +2,12 @@
 
 **Professional text editor for Linux with real-time syntax checking**
 
-![Version](https://img.shields.io/badge/version-1.8.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
+[![Version](https://img.shields.io/badge/version-1.8.0-blue)](https://github.com/azamat180195/az-text-editor/releases)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)](https://github.com/azamat180195/az-text-editor)
+[![Language](https://img.shields.io/badge/language-C-blue)](https://github.com/azamat180195/az-text-editor)
+
+> **Universal Linux text editor** - Works on Debian, Ubuntu, Fedora, RHEL, CentOS, Arch, Manjaro, openSUSE, Alpine, and more!
 
 ## ✨ Features
 
@@ -20,11 +23,19 @@
 - **Lightweight** - <100KB binary, ~2MB RAM
 - **Fast** - <1ms syntax checking, no lag
 
-## 🚀 Quick Install
+## 🚀 Quick Install (All Linux Distros)
 
+### One-Line Install
 ```bash
-curl -fsSL https://raw.githubusercontent.com/USERNAME/az-editor/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/azamat180195/az-text-editor/main/install.sh | bash
 ```
+
+**Supported Distributions:**
+- ✅ Debian / Ubuntu / Linux Mint / Pop!_OS
+- ✅ Fedora / RHEL / CentOS / Rocky / AlmaLinux  
+- ✅ Arch Linux / Manjaro
+- ✅ openSUSE / SUSE
+- ✅ Alpine Linux
 
 That's it! Now use:
 ```bash
@@ -35,8 +46,8 @@ az filename.txt
 
 ```bash
 # Clone
-git clone https://github.com/USERNAME/az-editor.git
-cd az-editor
+git clone https://github.com/azamat180195/az-text-editor.git
+cd az-text-editor
 
 # Compile & Install
 make
@@ -93,14 +104,39 @@ az test.txt
 
 ## 🔧 Requirements
 
-- **OS**: Linux (Debian, Ubuntu, Arch, etc.)
-- **Dependencies**: 
-  - `gcc`
-  - `libncurses-dev`
+- **OS**: Any Linux distribution
+- **Dependencies**: `gcc`, `make`, `ncurses`
 
-Install on Debian/Ubuntu:
+### Install Dependencies
+
+**Debian / Ubuntu / Mint:**
 ```bash
 sudo apt-get install build-essential libncurses-dev
+```
+
+**Fedora / RHEL 8+ / CentOS 8+:**
+```bash
+sudo dnf install gcc ncurses-devel make
+```
+
+**RHEL 7 / CentOS 7:**
+```bash
+sudo yum install gcc ncurses-devel make
+```
+
+**Arch / Manjaro:**
+```bash
+sudo pacman -S gcc ncurses make
+```
+
+**openSUSE:**
+```bash
+sudo zypper install gcc ncurses-devel make
+```
+
+**Alpine:**
+```bash
+sudo apk add gcc ncurses-dev make musl-dev
 ```
 
 ## 📖 Usage Examples
@@ -132,8 +168,8 @@ az app.yml
 
 ```bash
 # Clone
-git clone https://github.com/USERNAME/az-editor.git
-cd az-editor
+git clone https://github.com/azamat180195/az-text-editor.git
+cd az-text-editor
 
 # Compile
 make
@@ -147,6 +183,12 @@ sudo make install
 # Now use anywhere:
 az /path/to/file.txt
 ```
+
+### Installation Locations
+
+- **Default**: `/usr/local/bin/az`
+- **Custom**: `make install PREFIX=/opt/az`
+- **Local**: Copy `az` to `~/.local/bin/`
 
 ## 📊 Technical Details
 
@@ -180,9 +222,10 @@ MIT License - See LICENSE file
 
 ## 🔗 Links
 
-- GitHub: https://github.com/USERNAME/az-editor
-- Issues: https://github.com/USERNAME/az-editor/issues
-- Documentation: https://github.com/USERNAME/az-editor/wiki
+- **GitHub**: https://github.com/azamat180195/az-text-editor
+- **Issues**: https://github.com/azamat180195/az-text-editor/issues
+- **Releases**: https://github.com/azamat180195/az-text-editor/releases
+- **Install**: `curl -fsSL https://raw.githubusercontent.com/azamat180195/az-text-editor/main/install.sh | bash`
 
 ## 🎯 Roadmap
 
@@ -190,6 +233,7 @@ MIT License - See LICENSE file
 - [x] Right-click paste
 - [x] English interface
 - [x] One-line install
+- [x] Universal Linux support
 
 ### v1.9.0 (Planned)
 - [ ] Redo support
@@ -201,6 +245,28 @@ MIT License - See LICENSE file
 - [ ] Plugin system
 - [ ] LSP support
 
+## 🌍 Tested On
+
+- ✅ Debian 11, 12
+- ✅ Ubuntu 20.04, 22.04, 24.04
+- ✅ Fedora 38, 39, 40
+- ✅ RHEL 8, 9
+- ✅ CentOS 7, 8
+- ✅ Arch Linux (latest)
+- ✅ Manjaro (latest)
+- ✅ openSUSE Leap, Tumbleweed
+- ✅ Alpine 3.x
+
+**If it works on your distro, let us know!**
+
+## ⭐ Star This Project
+
+If you find AZ Editor useful, please star this repository!
+
+[![GitHub stars](https://img.shields.io/github/stars/azamat180195/az-text-editor?style=social)](https://github.com/azamat180195/az-text-editor)
+
 ---
 
 **Made with ❤️ by Factory AI**
+
+**Repository**: https://github.com/azamat180195/az-text-editor

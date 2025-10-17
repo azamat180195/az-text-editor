@@ -46,21 +46,28 @@ az-editor/
 
 ### Method 1: One-Line Install (Easiest)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/USERNAME/az-editor/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/azamat180195/az-text-editor/main/install.sh | bash
 ```
+
+**Auto-detects and supports:**
+- Debian, Ubuntu, Mint, Pop!_OS
+- Fedora, RHEL, CentOS, Rocky, AlmaLinux
+- Arch Linux, Manjaro
+- openSUSE Leap, Tumbleweed
+- Alpine Linux
 
 ### Method 2: Git Clone
 ```bash
-git clone https://github.com/USERNAME/az-editor.git
-cd az-editor
+git clone https://github.com/azamat180195/az-text-editor.git
+cd az-text-editor
 make
 sudo make install
 ```
 
 ### Method 3: Manual Download
 ```bash
-wget https://raw.githubusercontent.com/USERNAME/az-editor/main/az.c
-wget https://raw.githubusercontent.com/USERNAME/az-editor/main/Makefile
+wget https://raw.githubusercontent.com/azamat180195/az-text-editor/main/az.c
+wget https://raw.githubusercontent.com/azamat180195/az-text-editor/main/Makefile
 make
 sudo make install
 ```
@@ -255,8 +262,9 @@ Modified     Position + Percent         Click to jump
 - **README.md** - Main documentation
 - **INSTALL.md** - Detailed installation
 - **FEATURES.md** - Feature list
-- **GitHub** - https://github.com/USERNAME/az-editor
-- **Issues** - https://github.com/USERNAME/az-editor/issues
+- **GitHub** - https://github.com/azamat180195/az-text-editor
+- **Issues** - https://github.com/azamat180195/az-text-editor/issues
+- **Releases** - https://github.com/azamat180195/az-text-editor/releases
 
 ---
 
@@ -294,8 +302,8 @@ Copyright (c) 2024 Factory AI
 ## 🎯 Quick Start
 
 ```bash
-# Install
-curl -fsSL https://raw.githubusercontent.com/USERNAME/az-editor/main/install.sh | bash
+# Install (works on all major Linux distros)
+curl -fsSL https://raw.githubusercontent.com/azamat180195/az-text-editor/main/install.sh | bash
 
 # Use
 az myfile.txt
@@ -306,6 +314,17 @@ az myfile.txt
 # - Click errors to jump
 # - Real-time syntax check
 ```
+
+## 🌍 Universal Linux Support
+
+Works on **all major Linux distributions**:
+- Debian-based (Debian, Ubuntu, Mint, Pop!_OS)
+- Red Hat-based (Fedora, RHEL, CentOS, Rocky, AlmaLinux)
+- Arch-based (Arch, Manjaro)
+- SUSE-based (openSUSE Leap, Tumbleweed)
+- Alpine Linux
+
+The installer **auto-detects** your distribution and installs the correct dependencies!
 
 ---
 
