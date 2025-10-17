@@ -428,7 +428,6 @@ void check_syntax_error(Editor *ed) {
         line_num = 1;
         while (line) {
             /* Skip comments - YAML comments start with # */
-            int is_comment = 0;
             size_t comment_start = line->len;
             for (size_t i = 0; i < line->len; i++) {
                 if (line->data[i] == '#') {
@@ -637,35 +636,33 @@ void check_syntax_error(Editor *ed) {
         line = ed->first_line;
         line_num = 1;
         while (line) {
-            int in_line_comment = 0;
             for (size_t i = 0; i < line->len; i++) {
                 char c = line->data[i];
                 
-                /* Check for single-line comment // */
+                /* Check for single-line comment */
                 if (!in_string && !in_multiline_comment && 
                     c == '/' && i + 1 < line->len && line->data[i+1] == '/') {
-                    in_line_comment = 1;
                     break;  /* Rest of line is comment */
                 }
                 
-                /* Check for multi-line comment start /* */
+                /* Check for multi-line comment start */
                 if (!in_string && !in_multiline_comment && 
                     c == '/' && i + 1 < line->len && line->data[i+1] == '*') {
                     in_multiline_comment = 1;
-                    i++;  /* Skip * */
+                    i++;  /* Skip star */
                     continue;
                 }
                 
-                /* Check for multi-line comment end */ */
+                /* Check for multi-line comment end */
                 if (in_multiline_comment && 
                     c == '*' && i + 1 < line->len && line->data[i+1] == '/') {
                     in_multiline_comment = 0;
-                    i++;  /* Skip / */
+                    i++;  /* Skip slash */
                     continue;
                 }
                 
                 /* Skip if in comment */
-                if (in_multiline_comment || in_line_comment) continue;
+                if (in_multiline_comment) continue;
                 
                 /* Check for strings */
                 if (c == '"' && (i == 0 || line->data[i-1] != '\\')) {
