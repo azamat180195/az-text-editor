@@ -427,8 +427,18 @@ void check_syntax_error(Editor *ed) {
         line = ed->first_line;
         line_num = 1;
         while (line) {
-            /* Check for tab characters (YAML doesn't allow tabs) */
+            /* Skip comments - YAML comments start with # */
+            int is_comment = 0;
+            size_t comment_start = line->len;
             for (size_t i = 0; i < line->len; i++) {
+                if (line->data[i] == '#') {
+                    comment_start = i;
+                    break;
+                }
+            }
+            
+            /* Check for tab characters (YAML doesn't allow tabs) - skip comments */
+            for (size_t i = 0; i < comment_start; i++) {
                 if (line->data[i] == '\t') {
                     ed->syntax_error.line = line_num;
                     ed->syntax_error.col_start = i;
@@ -438,9 +448,10 @@ void check_syntax_error(Editor *ed) {
                     return;
                 }
             }
-            /* Check for unbalanced brackets */
+            
+            /* Check for unbalanced brackets - skip comments */
             int brace = 0, bracket = 0;
-            for (size_t i = 0; i < line->len; i++) {
+            for (size_t i = 0; i < comment_start; i++) {
                 if (line->data[i] == '{') brace++;
                 if (line->data[i] == '}') brace--;
                 if (line->data[i] == '[') bracket++;
@@ -457,7 +468,7 @@ void check_syntax_error(Editor *ed) {
             if (brace != 0 || bracket != 0) {
                 ed->syntax_error.line = line_num;
                 ed->syntax_error.col_start = 0;
-                ed->syntax_error.col_end = line->len;
+                ed->syntax_error.col_end = comment_start;
                 snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
                         "Bracket not closed");
                 return;
@@ -469,31 +480,81 @@ void check_syntax_error(Editor *ed) {
     
     /* Python validation */
     if (strcmp(ext, ".py") == 0) {
+        /* Track indentation style across whole file */
+        int file_uses_tabs = 0;
+        int file_uses_spaces = 0;
+        int first_indent_line = 0;
+        
         line = ed->first_line;
         line_num = 1;
         while (line) {
-            /* Check for basic indentation errors (mixing tabs/spaces) */
-            int has_tab = 0, has_space = 0;
+            /* Skip empty lines and comments */
+            if (line->len == 0) {
+                line = line->next;
+                line_num++;
+                continue;
+            }
+            
+            /* Check if line is comment */
+            size_t first_char = 0;
+            while (first_char < line->len && (line->data[first_char] == ' ' || line->data[first_char] == '\t')) {
+                first_char++;
+            }
+            if (first_char < line->len && line->data[first_char] == '#') {
+                line = line->next;
+                line_num++;
+                continue;
+            }
+            
+            /* Check indentation on this line */
+            int line_has_tab = 0, line_has_space = 0;
             int first_tab = -1, first_space = -1;
             for (size_t i = 0; i < line->len && (line->data[i] == ' ' || line->data[i] == '\t'); i++) {
                 if (line->data[i] == '\t') {
-                    has_tab = 1;
+                    line_has_tab = 1;
                     if (first_tab == -1) first_tab = i;
                 }
                 if (line->data[i] == ' ') {
-                    has_space = 1;
+                    line_has_space = 1;
                     if (first_space == -1) first_space = i;
                 }
             }
-            if (has_tab && has_space) {
-                int error_pos = (first_tab > first_space) ? first_tab : first_space;
+            
+            /* Check for mixed tabs and spaces on same line */
+            if (line_has_tab && line_has_space) {
+                int error_pos = (first_tab < first_space) ? first_space : first_tab;
                 ed->syntax_error.line = line_num;
                 ed->syntax_error.col_start = error_pos;
                 ed->syntax_error.col_end = error_pos + 1;
                 snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
-                        "Mixed TAB and spaces - use one");
+                        "Mixed TAB and spaces on same line");
                 return;
             }
+            
+            /* Track file-wide indentation style */
+            if ((line_has_tab || line_has_space) && first_indent_line == 0) {
+                first_indent_line = line_num;
+                if (line_has_tab) file_uses_tabs = 1;
+                if (line_has_space) file_uses_spaces = 1;
+            } else if (line_has_tab || line_has_space) {
+                if (line_has_tab && file_uses_spaces) {
+                    ed->syntax_error.line = line_num;
+                    ed->syntax_error.col_start = first_tab;
+                    ed->syntax_error.col_end = first_tab + 1;
+                    snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
+                            "TAB used but file uses spaces (L%d)", first_indent_line);
+                    return;
+                }
+                if (line_has_space && file_uses_tabs) {
+                    ed->syntax_error.line = line_num;
+                    ed->syntax_error.col_start = first_space;
+                    ed->syntax_error.col_end = first_space + 1;
+                    snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
+                            "Spaces used but file uses TABs (L%d)", first_indent_line);
+                    return;
+                }
+            }
+            
             line = line->next;
             line_num++;
         }
@@ -502,14 +563,44 @@ void check_syntax_error(Editor *ed) {
     /* HTML/XML validation */
     if (strcmp(ext, ".html") == 0 || strcmp(ext, ".xml") == 0 || strcmp(ext, ".htm") == 0) {
         int tag_depth = 0;
+        int in_comment = 0;
         line = ed->first_line;
         line_num = 1;
         while (line) {
             for (size_t i = 0; i < line->len; i++) {
+                /* Check for comment start <!-- */
+                if (!in_comment && i + 3 < line->len && 
+                    line->data[i] == '<' && line->data[i+1] == '!' && 
+                    line->data[i+2] == '-' && line->data[i+3] == '-') {
+                    in_comment = 1;
+                    i += 3;
+                    continue;
+                }
+                /* Check for comment end --> */
+                if (in_comment && i + 2 < line->len && 
+                    line->data[i] == '-' && line->data[i+1] == '-' && line->data[i+2] == '>') {
+                    in_comment = 0;
+                    i += 2;
+                    continue;
+                }
+                
+                /* Skip if in comment */
+                if (in_comment) continue;
+                
                 if (line->data[i] == '<' && i + 1 < line->len) {
                     if (line->data[i+1] != '/' && line->data[i+1] != '!' && line->data[i+1] != '?') {
-                        /* Opening tag */
-                        tag_depth++;
+                        /* Check for self-closing tag like <br/> or <img/> */
+                        int is_self_closing = 0;
+                        for (size_t j = i; j < line->len; j++) {
+                            if (line->data[j] == '/' && j + 1 < line->len && line->data[j+1] == '>') {
+                                is_self_closing = 1;
+                                break;
+                            }
+                            if (line->data[j] == '>') break;
+                        }
+                        if (!is_self_closing) {
+                            tag_depth++;
+                        }
                     } else if (line->data[i+1] == '/') {
                         /* Closing tag */
                         tag_depth--;
@@ -542,35 +633,61 @@ void check_syntax_error(Editor *ed) {
         strcmp(ext, ".cpp") == 0 || strcmp(ext, ".go") == 0 ||
         strcmp(ext, ".h") == 0 || strcmp(ext, ".hpp") == 0) {
         int brace_count = 0;
-        int in_string = 0, in_comment = 0;
+        int in_string = 0, in_multiline_comment = 0;
         line = ed->first_line;
         line_num = 1;
         while (line) {
+            int in_line_comment = 0;
             for (size_t i = 0; i < line->len; i++) {
                 char c = line->data[i];
-                /* Skip strings */
+                
+                /* Check for single-line comment // */
+                if (!in_string && !in_multiline_comment && 
+                    c == '/' && i + 1 < line->len && line->data[i+1] == '/') {
+                    in_line_comment = 1;
+                    break;  /* Rest of line is comment */
+                }
+                
+                /* Check for multi-line comment start /* */
+                if (!in_string && !in_multiline_comment && 
+                    c == '/' && i + 1 < line->len && line->data[i+1] == '*') {
+                    in_multiline_comment = 1;
+                    i++;  /* Skip * */
+                    continue;
+                }
+                
+                /* Check for multi-line comment end */ */
+                if (in_multiline_comment && 
+                    c == '*' && i + 1 < line->len && line->data[i+1] == '/') {
+                    in_multiline_comment = 0;
+                    i++;  /* Skip / */
+                    continue;
+                }
+                
+                /* Skip if in comment */
+                if (in_multiline_comment || in_line_comment) continue;
+                
+                /* Check for strings */
                 if (c == '"' && (i == 0 || line->data[i-1] != '\\')) {
                     in_string = !in_string;
+                    continue;
                 }
-                if (!in_string) {
-                    /* Skip comments */
-                    if (c == '/' && i + 1 < line->len && line->data[i+1] == '/') break;
-                    if (c == '/' && i + 1 < line->len && line->data[i+1] == '*') in_comment = 1;
-                    if (c == '*' && i + 1 < line->len && line->data[i+1] == '/') in_comment = 0;
-                    
-                    if (!in_comment) {
-                        if (c == '{') brace_count++;
-                        if (c == '}') {
-                            brace_count--;
-                            if (brace_count < 0) {
-                                ed->syntax_error.line = line_num;
-                                ed->syntax_error.col_start = i;
-                                ed->syntax_error.col_end = i + 1;
-                                snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
-                                        "Ortiqcha '}' - ochilmagan jingalak qavs");
-                                return;
-                            }
-                        }
+                
+                /* Skip if in string */
+                if (in_string) continue;
+                
+                /* Check braces */
+                if (c == '{') {
+                    brace_count++;
+                } else if (c == '}') {
+                    brace_count--;
+                    if (brace_count < 0) {
+                        ed->syntax_error.line = line_num;
+                        ed->syntax_error.col_start = i;
+                        ed->syntax_error.col_end = i + 1;
+                        snprintf(ed->syntax_error.msg, sizeof(ed->syntax_error.msg), 
+                                "Extra '}' - no opening brace");
+                        return;
                     }
                 }
             }
